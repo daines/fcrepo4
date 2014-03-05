@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.Principal;
-import java.util.Set;
 
 /**
  * The security context for Fedora servlet users. These users are not
@@ -41,8 +40,6 @@ public class FedoraUserSecurityContext implements SecurityContext,
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(FedoraUserSecurityContext.class);
-
-    private Set<Principal> principals = null;
 
     private Principal userPrincipal = null;
 
@@ -59,9 +56,7 @@ public class FedoraUserSecurityContext implements SecurityContext,
      */
     protected FedoraUserSecurityContext(
             final ServletCredentials credentials,
-            final Set<Principal> principals,
             final FedoraAuthorizationDelegate fad) {
-        this.principals = principals;
         this.fad = fad;
         if (credentials.getRequest() != null) {
             this.userPrincipal = credentials.getRequest().getUserPrincipal();
