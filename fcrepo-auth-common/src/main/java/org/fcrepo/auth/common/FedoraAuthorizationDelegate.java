@@ -16,11 +16,13 @@
 
 package org.fcrepo.auth.common;
 
+import org.modeshape.jcr.value.Path;
+
+import javax.jcr.Session;
+
 import java.security.Principal;
 import java.util.Iterator;
 import java.util.Set;
-
-import org.modeshape.jcr.value.Path;
 
 /**
  * Policy Enforcement Points implement the various authorization decisions
@@ -29,26 +31,23 @@ import org.modeshape.jcr.value.Path;
  *
  * @author Gregory Jansen
  */
-public interface FedoraPolicyEnforcementPoint {
+public interface FedoraAuthorizationDelegate {
 
     /**
      * Is the action permitted to the user or other any other principal on the
      * given node path?
-     *
-     * @param context
+     * 
+     * @param session
      * @param absPath
      * @param actions
-     * @param userPrincipal
-     * @param allPrincipals
      * @return
      */
-    boolean hasModeShapePermission(Path absPath, String[] actions,
-            Set<Principal> allPrincipals, Principal userPrincipal);
+    boolean hasPermission(Session session, Path absPath, String[] actions);
 
     /**
      * Filter the collection of JCR paths, selecting those the user has
      * permission to read.
-     * 
+     *
      * @param paths an iterator of paths
      * @param allPrincipals all the authenticated principals
      * @param userPrincipal the user principal

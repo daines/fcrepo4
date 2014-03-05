@@ -16,7 +16,10 @@
 
 package org.fcrepo.auth.roles.common;
 
-import org.fcrepo.auth.common.FedoraPolicyEnforcementPoint;
+import static org.fcrepo.auth.common.ServletContainerAuthenticationProvider.FEDORA_GROUP_PRINCIPALS;
+import static org.fcrepo.auth.common.ServletContainerAuthenticationProvider.FEDORA_USER_PRINCIPAL;
+
+import org.fcrepo.auth.common.FedoraAuthorizationDelegate;
 import org.fcrepo.http.commons.session.SessionFactory;
 import org.fcrepo.kernel.exception.RepositoryRuntimeException;
 import org.modeshape.jcr.value.Path;
@@ -42,7 +45,7 @@ import java.util.Set;
  * Policy enforcement point for roles-based authentication
  * @author Gregory Jansen
  */
-public abstract class AbstractRolesPEP implements FedoraPolicyEnforcementPoint {
+public abstract class AbstractRolesPEP implements FedoraAuthorizationDelegate {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(AbstractRolesPEP.class);
@@ -129,14 +132,34 @@ public abstract class AbstractRolesPEP implements FedoraPolicyEnforcementPoint {
     }
 
     @Override
-    public boolean hasModeShapePermission(final Path absPath,
-            final String[] actions, final Set<Principal> allPrincipals,
-            final Principal userPrincipal) {
+    public boolean hasPermission(Session session, final Path absPath,
+            final String[] actions) {
         final Set<String> roles;
-        final Session session;
+        final Principal userPrincipal;
+        final Set<Principal> groupPrincipals;
+        final Set<Principal> allPrincipals;
+
+        Object value;
+
+        value = session.getAttribute(FEDORA_USER_PRINCIPAL);
+        if (value instanceof Principal) {
+            userPrincipal = (Principal) value;
+        } else {
+            return false;
+        }
+
+        value = session.getAttribute(FEDORA_GROUP_PRINCIPALS);
+        if (value instanceof Set<?>) {
+            groupPrincipals = (Set<Principal>) value;
+        } else {
+            return false;
+        }
+
+        allPrincipals = new HashSet<>();
+        allPrincipals.add(userPrincipal);
+        allPrincipals.addAll(groupPrincipals);
 
         try {
-            session = sessionFactory.getInternalSession();
             final Map<String, List<String>> acl =
                     accessRolesProvider.findRolesForPath(absPath, session);
             roles = resolveUserRoles(acl, allPrincipals);
@@ -161,9 +184,7 @@ public abstract class AbstractRolesPEP implements FedoraPolicyEnforcementPoint {
             return true;
         }
 
-        if (!rolesHaveModeShapePermission(absPath.toString(), actions,
-                allPrincipals,
-                userPrincipal, roles)) {
+        if (!rolesHavePermission(absPath.toString(), actions, roles)) {
             return false;
         }
 
@@ -210,8 +231,8 @@ public abstract class AbstractRolesPEP implements FedoraPolicyEnforcementPoint {
                 } else {
                     roles = parentRoles;
                 }
-                if (rolesHaveModeShapePermission(n.getPath(), REMOVE_ACTIONS,
-                        allPrincipals, userPrincipal, roles)) {
+                if (rolesHavePermission(n.getPath(), REMOVE_ACTIONS,
+                        roles)) {
 
                     if (!canRemoveChildrenRecursive(n.getPath(), session,
                             allPrincipals, userPrincipal, roles)) {
@@ -241,9 +262,8 @@ public abstract class AbstractRolesPEP implements FedoraPolicyEnforcementPoint {
      * @param roles effective roles for this request and content
      * @return true if role has permission
      */
-    public abstract boolean rolesHaveModeShapePermission(String absPath,
-            String[] actions, Set<Principal> allPrincipals,
-            Principal userPrincipal, Set<String> roles);
+    public abstract boolean rolesHavePermission(final String absPath,
+            final String[] actions, final Set<String> roles);
 
     /**
      * Filter paths for reading
@@ -304,9 +324,7 @@ public abstract class AbstractRolesPEP implements FedoraPolicyEnforcementPoint {
                     final Map<String, List<String>> acl =
                             accessRolesProvider.findRolesForPath(p, session);
                     final Set<String> roles = resolveUserRoles(acl, principals);
-                    if (rolesHaveModeShapePermission(p.getString(),
-                            READ_ACTIONS,
-                            principals, userPrincipal, roles)) {
+                    if (rolesHavePermission(p.getString(), READ_ACTIONS, roles)) {
                         next = p;
                         break;
                     }

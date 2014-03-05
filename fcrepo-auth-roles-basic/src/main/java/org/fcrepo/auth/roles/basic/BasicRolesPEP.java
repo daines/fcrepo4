@@ -16,12 +16,11 @@
 
 package org.fcrepo.auth.roles.basic;
 
-import java.security.Principal;
-import java.util.Set;
-
 import org.fcrepo.auth.roles.common.AbstractRolesPEP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 /**
  * @author Gregory Jansen
@@ -39,9 +38,8 @@ public class BasicRolesPEP extends AbstractRolesPEP {
      * java.security.Principal, java.util.Set)
      */
     @Override
-    public boolean rolesHaveModeShapePermission(final String absPath,
-            final String[] actions, final Set<Principal> allPrincipals,
-            final Principal userPrincipal, final Set<String> roles) {
+    public boolean rolesHavePermission(final String absPath,
+            final String[] actions, final Set<String> roles) {
         if (roles.isEmpty()) {
             LOGGER.debug("A caller without content roles can do nothing in the repository.");
             return false;

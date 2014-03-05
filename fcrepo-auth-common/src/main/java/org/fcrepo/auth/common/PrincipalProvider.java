@@ -16,25 +16,26 @@
 
 package org.fcrepo.auth.common;
 
+import javax.jcr.Credentials;
+
 import java.security.Principal;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
- * These factories extract security principals from HTTP requests, often from
+ * These factories extract security principals from credentials, often from
  * request headers. Principals that will be assigned roles or privileges
  * must have a unique name string.
- * 
+ *
  * @author Gregory Jansen
  */
-public interface HTTPPrincipalFactory {
+public interface PrincipalProvider {
 
     /**
-     * Extract extra security principals from an HTTP request.
+     * Extract extra security principals from credentials.
      * 
-     * @param request the request
+     * @param credentials the credentials
      * @return a set of security principals
      */
-    Set<Principal> getGroupPrincipals(HttpServletRequest request);
+    Set<Principal> getPrincipals(Credentials credentials);
+
 }

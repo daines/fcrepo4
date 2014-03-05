@@ -18,15 +18,15 @@ package org.fcrepo.auth.common;
 
 import static org.fcrepo.auth.common.ServletContainerAuthenticationProvider.EVERYONE;
 
-import java.security.Principal;
-import java.util.Set;
-
 import org.modeshape.jcr.api.ServletCredentials;
 import org.modeshape.jcr.security.AdvancedAuthorizationProvider;
 import org.modeshape.jcr.security.SecurityContext;
 import org.modeshape.jcr.value.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.Principal;
+import java.util.Set;
 
 /**
  * The security context for Fedora servlet users. These users are not
@@ -46,7 +46,7 @@ public class FedoraUserSecurityContext implements SecurityContext,
 
     private Principal userPrincipal = null;
 
-    private FedoraPolicyEnforcementPoint pep = null;
+    private FedoraAuthorizationDelegate fad = null;
 
     private boolean loggedIn = true;
 
@@ -60,15 +60,16 @@ public class FedoraUserSecurityContext implements SecurityContext,
     protected FedoraUserSecurityContext(
             final ServletCredentials credentials,
             final Set<Principal> principals,
-            final FedoraPolicyEnforcementPoint pep) {
+            final FedoraAuthorizationDelegate fad) {
         this.principals = principals;
-        this.pep = pep;
+        this.fad = fad;
         if (credentials.getRequest() != null) {
             this.userPrincipal = credentials.getRequest().getUserPrincipal();
         }
-        if (this.pep == null) {
-            LOGGER.warn("This security context must have a PEP injected");
-            throw new IllegalArgumentException("This security context must have a PEP injected");
+        if (this.fad == null) {
+            LOGGER.warn("This security context must have a FAD injected");
+            throw new IllegalArgumentException(
+                    "This security context must have a FAD injected");
         }
     }
 
@@ -156,10 +157,9 @@ public class FedoraUserSecurityContext implements SecurityContext,
             return actions.length == 1 && "read".equals(actions[0]);
         }
 
-        // delegate to Fedora PDP
-        if (pep != null) {
-            return pep.hasModeShapePermission(absPath, actions,
-                    this.principals, getEffectiveUserPrincipal());
+        // delegate
+        if (fad != null) {
+            return fad.hasPermission(context.getSession(), absPath, actions);
         }
         return false;
     }
