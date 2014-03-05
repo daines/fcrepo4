@@ -16,8 +16,8 @@
 
 package org.fcrepo.auth.roles.common;
 
-import static org.fcrepo.auth.common.ServletContainerAuthenticationProvider.FEDORA_GROUP_PRINCIPALS;
-import static org.fcrepo.auth.common.ServletContainerAuthenticationProvider.FEDORA_USER_PRINCIPAL;
+import static org.fcrepo.auth.common.SessionAttributeKeys.FEDORA_ALL_PRINCIPALS;
+import static org.fcrepo.auth.common.SessionAttributeKeys.FEDORA_USER_PRINCIPAL;
 
 import org.fcrepo.auth.common.FedoraAuthorizationDelegate;
 import org.fcrepo.http.commons.session.SessionFactory;
@@ -136,28 +136,17 @@ public abstract class AbstractRolesPEP implements FedoraAuthorizationDelegate {
             final String[] actions) {
         final Set<String> roles;
         final Principal userPrincipal;
-        final Set<Principal> groupPrincipals;
         final Set<Principal> allPrincipals;
 
-        Object value;
-
-        value = session.getAttribute(FEDORA_USER_PRINCIPAL);
-        if (value instanceof Principal) {
-            userPrincipal = (Principal) value;
-        } else {
+        userPrincipal = getUserPrincipal(session);
+        if (userPrincipal == null) {
             return false;
         }
 
-        value = session.getAttribute(FEDORA_GROUP_PRINCIPALS);
-        if (value instanceof Set<?>) {
-            groupPrincipals = (Set<Principal>) value;
-        } else {
+        allPrincipals = getPrincipals(session);
+        if (allPrincipals == null) {
             return false;
         }
-
-        allPrincipals = new HashSet<>();
-        allPrincipals.add(userPrincipal);
-        allPrincipals.addAll(groupPrincipals);
 
         try {
             final Map<String, List<String>> acl =
@@ -196,6 +185,25 @@ public abstract class AbstractRolesPEP implements FedoraAuthorizationDelegate {
                     userPrincipal, roles);
         }
         return true;
+    }
+
+    private Principal getUserPrincipal(Session session) {
+        final Object value = session.getAttribute(FEDORA_USER_PRINCIPAL);
+        if (value instanceof Principal) {
+            return (Principal) value;
+        } else {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<Principal> getPrincipals(Session session) {
+        final Object value = session.getAttribute(FEDORA_ALL_PRINCIPALS);
+        if (value instanceof Set<?>) {
+            return (Set<Principal>) value;
+        } else {
+            return null;
+        }
     }
 
     /**

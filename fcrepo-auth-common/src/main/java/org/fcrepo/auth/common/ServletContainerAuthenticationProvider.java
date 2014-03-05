@@ -41,14 +41,6 @@ import java.util.Set;
 public class ServletContainerAuthenticationProvider implements
         AuthenticationProvider {
 
-    public static final String FEDORA_SERVLET_REQUEST =
-            "FEDORA_SERVLET_REQUEST";
-
-    public static final String FEDORA_USER_PRINCIPAL = "FEDORA_USER_PRINCIPAL";
-
-    public static final String FEDORA_GROUP_PRINCIPALS =
-            "FEDORA_GROUP_PRINCIPALS";
-
     private static ServletContainerAuthenticationProvider _instance = null;
 
     private ServletContainerAuthenticationProvider() {
@@ -141,7 +133,9 @@ public class ServletContainerAuthenticationProvider implements
                     .getRequest().getUserPrincipal().getName()));
         }
 
-        sessionAttributes.put(FEDORA_SERVLET_REQUEST, creds.getRequest());
+        sessionAttributes.put(SessionAttributeKeys.FEDORA_SERVLET_REQUEST,
+                creds
+                .getRequest());
 
         // add base public principals
         final Set<Principal> principals = new HashSet<>();
@@ -150,14 +144,19 @@ public class ServletContainerAuthenticationProvider implements
         // request fedora user role to add user principal
         if (creds.getRequest().getUserPrincipal() != null &&
                 creds.getRequest().isUserInRole(FEDORA_USER_ROLE)) {
-            sessionAttributes.put(FEDORA_USER_PRINCIPAL, creds.getRequest()
+            sessionAttributes.put(SessionAttributeKeys.FEDORA_USER_PRINCIPAL,
+                    creds
+                    .getRequest()
                     .getUserPrincipal());
 
             // get user details/principals
             addPrincipals(credentials, principals);
+
+            principals.add(creds.getRequest().getUserPrincipal());
         }
 
-        sessionAttributes.put(FEDORA_GROUP_PRINCIPALS, principals);
+        sessionAttributes.put(SessionAttributeKeys.FEDORA_ALL_PRINCIPALS,
+                principals);
 
         return repositoryContext.with(new FedoraUserSecurityContext(creds,
                 principals, fad));
