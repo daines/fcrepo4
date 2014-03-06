@@ -158,8 +158,7 @@ public class ServletContainerAuthenticationProvider implements
         sessionAttributes.put(SessionAttributeKeys.FEDORA_ALL_PRINCIPALS,
                 principals);
 
-        return repositoryContext.with(new FedoraUserSecurityContext(creds,
-                principals, fad));
+        return repositoryContext.with(new FedoraUserSecurityContext(creds, fad));
     }
 
     /**
