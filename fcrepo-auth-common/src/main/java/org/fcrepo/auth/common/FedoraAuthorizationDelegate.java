@@ -34,9 +34,30 @@ import java.util.Set;
 public interface FedoraAuthorizationDelegate {
 
     /**
+     * The name of the session attribute containing the servlet request (an
+     * instance of javax.servlet.http.HttpServletRequest).
+     */
+    public static final String FEDORA_SERVLET_REQUEST =
+            "fedora-servlet-request";
+
+    /**
+     * The name of the session attribute containing an instance of Principal
+     * representing the current authenticated user.
+     */
+    public static final String FEDORA_USER_PRINCIPAL = "fedora-user-principal";
+
+    /**
+     * The name of the session attribute containing a set of instances of
+     * Principal, representing the current user's credentials. This includes the
+     * value of the FEDORA_USER_PRINCIPAL attribute (if present) and any
+     * Principal instances obtained by configured PrincipalProviders.
+     */
+    public static final String FEDORA_ALL_PRINCIPALS = "fedora-all-principals";
+
+    /**
      * Is the action permitted to the user or other any other principal on the
      * given node path?
-     * 
+     *
      * @param session
      * @param absPath
      * @param actions

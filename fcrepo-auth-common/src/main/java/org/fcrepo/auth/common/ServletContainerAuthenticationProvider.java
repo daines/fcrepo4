@@ -133,7 +133,8 @@ public class ServletContainerAuthenticationProvider implements
                     .getRequest().getUserPrincipal().getName()));
         }
 
-        sessionAttributes.put(SessionAttributeKeys.FEDORA_SERVLET_REQUEST,
+        sessionAttributes.put(
+                FedoraAuthorizationDelegate.FEDORA_SERVLET_REQUEST,
                 creds
                 .getRequest());
 
@@ -144,7 +145,8 @@ public class ServletContainerAuthenticationProvider implements
         // request fedora user role to add user principal
         if (creds.getRequest().getUserPrincipal() != null &&
                 creds.getRequest().isUserInRole(FEDORA_USER_ROLE)) {
-            sessionAttributes.put(SessionAttributeKeys.FEDORA_USER_PRINCIPAL,
+            sessionAttributes.put(
+                    FedoraAuthorizationDelegate.FEDORA_USER_PRINCIPAL,
                     creds
                     .getRequest()
                     .getUserPrincipal());
@@ -155,7 +157,8 @@ public class ServletContainerAuthenticationProvider implements
             principals.add(creds.getRequest().getUserPrincipal());
         }
 
-        sessionAttributes.put(SessionAttributeKeys.FEDORA_ALL_PRINCIPALS,
+        sessionAttributes.put(
+                FedoraAuthorizationDelegate.FEDORA_ALL_PRINCIPALS,
                 principals);
 
         return repositoryContext

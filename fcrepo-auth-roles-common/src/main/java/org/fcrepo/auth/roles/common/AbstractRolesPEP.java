@@ -16,9 +16,6 @@
 
 package org.fcrepo.auth.roles.common;
 
-import static org.fcrepo.auth.common.SessionAttributeKeys.FEDORA_ALL_PRINCIPALS;
-import static org.fcrepo.auth.common.SessionAttributeKeys.FEDORA_USER_PRINCIPAL;
-
 import org.fcrepo.auth.common.FedoraAuthorizationDelegate;
 import org.fcrepo.http.commons.session.SessionFactory;
 import org.fcrepo.kernel.exception.RepositoryRuntimeException;
