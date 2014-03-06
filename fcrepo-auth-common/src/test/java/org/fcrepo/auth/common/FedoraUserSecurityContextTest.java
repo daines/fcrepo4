@@ -18,7 +18,6 @@ package org.fcrepo.auth.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -26,26 +25,22 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.security.Principal;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.modeshape.jcr.security.AdvancedAuthorizationProvider.Context;
+import org.modeshape.jcr.value.Path;
 
 import javax.jcr.Session;
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.modeshape.jcr.api.ServletCredentials;
-import org.modeshape.jcr.security.AdvancedAuthorizationProvider.Context;
-import org.modeshape.jcr.value.Path;
+import java.security.Principal;
 
 /**
  * @author bbpennel
  * @date Feb 12, 2014
  */
 public class FedoraUserSecurityContextTest {
-
-    @Mock
-    private ServletCredentials creds;
 
     @Mock
     private FedoraAuthorizationDelegate fad;
@@ -60,30 +55,30 @@ public class FedoraUserSecurityContextTest {
     public void setUp() {
         initMocks(this);
         when(request.getUserPrincipal()).thenReturn(principal);
-        when(creds.getRequest()).thenReturn(request);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoPEP() {
-        new FedoraUserSecurityContext(creds, null);
+        new FedoraUserSecurityContext(principal, null);
     }
 
     @Test
-    public void testIsAnonymous() {
-        FedoraUserSecurityContext context =
- new FedoraUserSecurityContext(creds, fad);
+    public void testIsNotAnonymous() {
+        final FedoraUserSecurityContext context =
+                new FedoraUserSecurityContext(principal, fad);
         assertFalse(context.isAnonymous());
+    }
 
-        when(request.getUserPrincipal()).thenReturn(null);
-
-        context = new FedoraUserSecurityContext(creds, fad);
+    public void testIsAnonymous() {
+        final FedoraUserSecurityContext context =
+                new FedoraUserSecurityContext(null, fad);
         assertTrue(context.isAnonymous());
     }
 
     @Test
     public void testGetEffectiveUserPrincipal() {
         FedoraUserSecurityContext context =
- new FedoraUserSecurityContext(creds, fad);
+                new FedoraUserSecurityContext(principal, fad);
 
         assertEquals("Effective user principal must match given principal",
                 principal, context.getEffectiveUserPrincipal());
@@ -93,8 +88,7 @@ public class FedoraUserSecurityContextTest {
                 ServletContainerAuthenticationProvider.EVERYONE, context
                 .getEffectiveUserPrincipal());
 
-        when(request.getUserPrincipal()).thenReturn(null);
-        context = new FedoraUserSecurityContext(creds, fad);
+        context = new FedoraUserSecurityContext(null, fad);
 
         assertEquals(
                 "Effective user principal should be EVERYONE when none is provided",
@@ -103,30 +97,24 @@ public class FedoraUserSecurityContextTest {
     }
 
     @Test
-    public void testNoRequest() {
-        when(creds.getRequest()).thenReturn(null);
+    public void testGetAnonymousUserName() {
         final FedoraUserSecurityContext context =
- new FedoraUserSecurityContext(creds, fad);
-
-        assertTrue(context.isAnonymous());
-        verify(creds).getRequest();
+                new FedoraUserSecurityContext(null, fad);
+        assertEquals("EVERYONE", context.getUserName());
     }
 
     @Test
     public void testGetUserName() {
-        final FedoraUserSecurityContext context =
- new FedoraUserSecurityContext(creds, fad);
-
-        assertNull(context.getUserName());
-
         when(principal.getName()).thenReturn("username");
+        final FedoraUserSecurityContext context =
+                new FedoraUserSecurityContext(principal, fad);
         assertEquals("username", context.getUserName());
     }
 
     @Test
     public void testHasRole() {
         final FedoraUserSecurityContext context =
- new FedoraUserSecurityContext(creds, fad);
+                new FedoraUserSecurityContext(principal, fad);
 
         assertTrue(context.hasRole("read"));
         assertTrue(context.hasRole("write"));
@@ -138,7 +126,7 @@ public class FedoraUserSecurityContextTest {
     @Test(expected = NullPointerException.class)
     public void testHasPermissionNullActions() {
         final FedoraUserSecurityContext context =
- new FedoraUserSecurityContext(creds, fad);
+                new FedoraUserSecurityContext(principal, fad);
 
         context.hasPermission(null, null, (String[]) null);
     }
@@ -146,7 +134,7 @@ public class FedoraUserSecurityContextTest {
     @Test
     public void testHasPermission() {
         final FedoraUserSecurityContext context =
-                new FedoraUserSecurityContext(creds, fad);
+                new FedoraUserSecurityContext(principal, fad);
 
         assertFalse("Granted permission with no action on root", context
                 .hasPermission(null, null, new String[] {}));

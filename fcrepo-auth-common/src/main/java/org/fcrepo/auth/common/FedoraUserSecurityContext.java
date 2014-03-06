@@ -18,7 +18,6 @@ package org.fcrepo.auth.common;
 
 import static org.fcrepo.auth.common.ServletContainerAuthenticationProvider.EVERYONE;
 
-import org.modeshape.jcr.api.ServletCredentials;
 import org.modeshape.jcr.security.AdvancedAuthorizationProvider;
 import org.modeshape.jcr.security.SecurityContext;
 import org.modeshape.jcr.value.Path;
@@ -54,13 +53,11 @@ public class FedoraUserSecurityContext implements SecurityContext,
      * @param principals security principals associated with this request
      * @param pep the policy enforcement point
      */
-    protected FedoraUserSecurityContext(
-            final ServletCredentials credentials,
+    protected FedoraUserSecurityContext(final Principal userPrincipal,
             final FedoraAuthorizationDelegate fad) {
         this.fad = fad;
-        if (credentials.getRequest() != null) {
-            this.userPrincipal = credentials.getRequest().getUserPrincipal();
-        }
+        this.userPrincipal = userPrincipal;
+
         if (this.fad == null) {
             LOGGER.warn("This security context must have a FAD injected");
             throw new IllegalArgumentException(
