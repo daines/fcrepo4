@@ -216,9 +216,10 @@ public abstract class AbstractRolesPEP implements FedoraAuthorizationDelegate {
             final Session session, final Set<Principal> allPrincipals,
             final Principal userPrincipal, final Set<String> parentRoles) {
         try {
+            final Session internalSession = sessionFactory.getInternalSession();
             LOGGER.debug("Recursive child remove permission checks for: {}",
                          parentPath);
-            final Node parent = session.getNode(parentPath);
+            final Node parent = internalSession.getNode(parentPath);
             if (!parent.hasNodes()) {
                 return true;
             }
