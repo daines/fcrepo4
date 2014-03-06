@@ -55,8 +55,21 @@ public interface FedoraAuthorizationDelegate {
     public static final String FEDORA_ALL_PRINCIPALS = "fedora-all-principals";
 
     /**
-     * Is the action permitted to the user or other any other principal on the
-     * given node path?
+     * Determine if the supplied session has permission at absPath for all of
+     * the actions.
+     * <p>
+     * The authentication provider may have added session attributes, which can
+     * be accessed in implementations by calling session#getAttribute. If an
+     * attribute is not available in session attributes and would be required to
+     * establish that the session has permission for any action given, an
+     * implementation should usually return false.
+     * </p>
+     * <p>
+     * Note that calls to, e.g., session#getNode in hasPermission will result in
+     * permission checks using that session instance and thus an infinite loop.
+     * Instead, obtain a new session instance if your implementation requires
+     * access to nodes. See AbstractRolesPEP for an example.
+     * </p>
      *
      * @param session
      * @param absPath
