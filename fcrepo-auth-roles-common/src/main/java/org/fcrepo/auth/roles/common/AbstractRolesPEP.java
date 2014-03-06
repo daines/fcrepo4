@@ -146,8 +146,10 @@ public abstract class AbstractRolesPEP implements FedoraAuthorizationDelegate {
         }
 
         try {
+            final Session internalSession = sessionFactory.getInternalSession();
             final Map<String, List<String>> acl =
-                    accessRolesProvider.findRolesForPath(absPath, session);
+                    accessRolesProvider.findRolesForPath(absPath,
+                            internalSession);
             roles = resolveUserRoles(acl, allPrincipals);
             LOGGER.debug("roles for this request: {}", roles);
         } catch (final RepositoryException e) {
